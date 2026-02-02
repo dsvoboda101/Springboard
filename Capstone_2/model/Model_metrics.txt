@@ -1,0 +1,5 @@
+CatBoostRegressor() with default parameters
+Trained on LengthofStay_Xtrain.csv and LengthofStay_ytrain.csv
+R-squared = 0.979498
+MAE = 0.279898
+RMSE = 0.371828
