@@ -1,0 +1,27 @@
+Option #1: Manual Gene Selection
+CatBoostRegressor() with default parameters
+Trained on donor_22_manual.h5ad, predicting 'pseudorank', split with test_size=0.2
+MAE = 0.0.009986
+
+Option #2: Automated Gene Selection 
+CatBoostRegressor() with default parameters
+Trained on donor_100_automatic.h5ad, predicting 'pseudorank', split with test_size=0.2
+
+Use the following code for automated features selection and retraining model before use on new dataset:
+
+train_pool = Pool(X_train, y_train)
+selector_model = CatBoostRegressor(loss_function = 'MAE', verbose=0) #Build Selector Model for calculating Shap Values
+selector_model.fit(X_train, y_train)
+shap_values = selector_model.get_feature_importance(data=train_pool, type='ShapValues') #Calculate shap values
+feature_importance = np.abs(shap_values).mean(axis=0) #Calculate feature importance
+sorted_features = sorted(zip(X_train.columns, feature_importance), key=lambda x: x[1], reverse=True)
+selected_genes = [f for f,val in zip(X_train.columns, feature_importance) if val > shap_threshold] #fine genes above threshold
+selected_genes = selected_genes[:22]
+if len(selected_genes) == 0:
+  selected_genes = [f for f, _ in sorted_features[:5]]
+CB_final_auto = CatBoostRegressor(loss_function = 'MAE', verbose=0) #train new model on selected_genes
+CB_final_auto.fit(X_train[selected_genes], y_train)
+y_pred_auto = CB_final_auto.predict(X_test[selected_genes])
+
+MAE = 0.0.01017
+
